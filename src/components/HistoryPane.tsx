@@ -27,7 +27,7 @@ export function HistoryPane({
   isLoading,
 }: HistoryPaneProps) {
   return (
-    <Card className="flex h-full flex-col">
+    <div className="flex h-full flex-col border-none">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -95,6 +95,6 @@ export function HistoryPane({
           )}
         </ScrollArea>
       </CardContent>
-    </Card>
+    </div>
   );
 }

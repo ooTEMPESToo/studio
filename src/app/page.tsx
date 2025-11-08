@@ -7,7 +7,6 @@ import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
 import { getAiSuggestions, type TransformedFile } from '@/app/actions';
 import { useToast } from '@/components/ui/use-toast';
-import { HistoryPane } from '@/components/HistoryPane';
 
 export type Framework = 'nextjs' | 'react' | 'angular';
 
@@ -69,10 +68,16 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header 
+        history={history}
+        onLoadHistory={handleLoadHistory}
+        onDeleteHistory={handleDeleteHistory}
+        onClearHistory={handleClearHistory}
+        isLoading={isLoading}
+      />
       <main className="flex-1 p-4 lg:p-6">
-        <div className="grid h-full grid-cols-1 gap-6 xl:grid-cols-12">
-          <div className="xl:col-span-3">
+        <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="md:col-span-1">
             <CodeInputPane
               code={code}
               setCode={setCode}
@@ -82,22 +87,13 @@ export default function Home() {
               setFramework={setFramework}
             />
           </div>
-          <div className="xl:col-span-3">
-            <HistoryPane
-              history={history}
-              onLoadHistory={handleLoadHistory}
-              onDeleteHistory={handleDeleteHistory}
-              onClearHistory={handleClearHistory}
-              isLoading={isLoading}
-            />
-          </div>
-          <div className="xl:col-span-3">
+          <div className="md:col-span-1">
             <SuggestionsPane
               suggestions={componentSuggestions}
               isLoading={isLoading}
             />
           </div>
-          <div className="xl:col-span-3">
+          <div className="md:col-span-2 xl:col-span-1">
             <OutputPane
               tailwindSuggestions={tailwindSuggestions}
               projectFiles={projectFiles}
