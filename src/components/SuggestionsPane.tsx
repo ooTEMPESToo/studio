@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import {
   Card,
   CardContent,
@@ -17,6 +18,12 @@ export function SuggestionsPane({
   suggestions,
   isLoading,
 }: SuggestionsPaneProps) {
+
+  const getMarkdownText = () => {
+    const rawMarkup = marked.parse(suggestions);
+    return { __html: rawMarkup };
+  };
+  
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
@@ -27,7 +34,7 @@ export function SuggestionsPane({
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="pr-4">
+          <div className="prose prose-sm dark:prose-invert max-w-none pr-4">
             {isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-8 w-3/4" />
@@ -41,9 +48,10 @@ export function SuggestionsPane({
                 </div>
               </div>
             ) : suggestions ? (
-              <pre className="whitespace-pre-wrap font-code text-sm">
-                <code>{suggestions}</code>
-              </pre>
+              <div
+                className="font-code"
+                dangerouslySetInnerHTML={getMarkdownText()}
+              />
             ) : (
               <div className="flex h-full min-h-[200px] items-center justify-center">
                 <p className="text-muted-foreground">
