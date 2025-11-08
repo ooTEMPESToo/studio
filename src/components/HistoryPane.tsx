@@ -4,12 +4,10 @@ import { History, Trash2, X } from 'lucide-react';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SheetDescription, SheetHeader, SheetTitle } from './ui/sheet';
 
 interface HistoryPaneProps {
   history: string[];
@@ -28,11 +26,11 @@ export function HistoryPane({
 }: HistoryPaneProps) {
   return (
     <div className="flex h-full flex-col border-none">
-      <CardHeader>
+      <SheetHeader className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            <CardTitle>History</CardTitle>
+            <SheetTitle>History</SheetTitle>
           </div>
           {history.length > 0 && (
             <Button
@@ -47,11 +45,11 @@ export function HistoryPane({
             </Button>
           )}
         </div>
-        <CardDescription>
+        <SheetDescription>
           Previously analyzed code snippets.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
+        </SheetDescription>
+      </SheetHeader>
+      <CardContent className="flex-1 overflow-hidden p-6 pt-0">
         <ScrollArea className="h-full">
           {history.length > 0 ? (
             <div className="space-y-2 pr-4">
