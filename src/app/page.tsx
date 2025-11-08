@@ -8,6 +8,8 @@ import { OutputPane } from '@/components/OutputPane';
 import { getAiSuggestions, type TransformedFile } from '@/app/actions';
 import { useToast } from '@/components/ui/use-toast';
 
+export type Framework = 'nextjs' | 'react' | 'angular';
+
 export default function Home() {
   const { toast } = useToast();
   const [code, setCode] = useState<string>('');
@@ -15,6 +17,7 @@ export default function Home() {
   const [tailwindSuggestions, setTailwindSuggestions] = useState<string>('');
   const [projectFiles, setProjectFiles] = useState<TransformedFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [framework, setFramework] = useState<Framework>('nextjs');
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -57,6 +60,8 @@ export default function Home() {
               setCode={setCode}
               onAnalyze={handleAnalyze}
               isLoading={isLoading}
+              framework={framework}
+              setFramework={setFramework}
             />
           </div>
           <div className="xl:col-span-4">
