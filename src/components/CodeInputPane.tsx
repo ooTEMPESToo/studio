@@ -1,7 +1,7 @@
 'use client';
 
 import type { Dispatch, SetStateAction } from 'react';
-import { Wand2, Upload, Loader2 } from 'lucide-react';
+import { Wand2, Upload, Loader2, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,14 +21,28 @@ export function CodeInputPane({
   isLoading,
 }: CodeInputPaneProps) {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        setCode(typeof text === 'string' ? text : '');
-      };
-      reader.readAsText(file);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const allFiles = Array.from(files);
+      const filePromises = allFiles.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const text = e.target?.result;
+            if (typeof text === 'string') {
+              resolve(`/* --- File: ${file.name} --- */\n\n${text}\n\n`);
+            } else {
+              resolve('');
+            }
+          };
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      });
+
+      Promise.all(filePromises).then((fileContents) => {
+        setCode(fileContents.join(''));
+      });
     }
   };
 
@@ -39,7 +53,9 @@ export function CodeInputPane({
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-4">
         <div className="grid flex-1 gap-2">
-          <Label htmlFor="code-input">Paste your HTML, CSS, or JS here</Label>
+          <Label htmlFor="code-input">
+            Paste your HTML, CSS, or JS here, or upload files
+          </Label>
           <Textarea
             id="code-input"
             placeholder="<html>...</html>"
@@ -56,14 +72,15 @@ export function CodeInputPane({
             disabled={isLoading}
           >
             <Upload className="mr-2 h-4 w-4" />
-            Upload File
+            Upload Files
           </Button>
           <input
             type="file"
             id="file-upload"
             className="hidden"
             onChange={handleFileChange}
-            accept=".html,.css,.js,.zip"
+            accept=".html,.css,.js"
+            multiple
           />
           <Button onClick={onAnalyze} disabled={isLoading}>
             {isLoading ? (
