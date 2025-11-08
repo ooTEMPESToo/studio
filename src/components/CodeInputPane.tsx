@@ -1,6 +1,6 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { Wand2, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,12 @@ export function CodeInputPane({
   framework,
   setFramework,
 }: CodeInputPaneProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -71,64 +77,65 @@ export function CodeInputPane({
             disabled={isLoading}
           />
         </div>
+        {isClient && (
+          <div className="space-y-4">
+            <div>
+              <Label className="mb-2 block">Choose Target Framework</Label>
+              <RadioGroup
+                defaultValue="nextjs"
+                className="flex gap-4"
+                value={framework}
+                onValueChange={(value: string) =>
+                  setFramework(value as Framework)
+                }
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="nextjs" id="nextjs" />
+                  <Label htmlFor="nextjs">Next.js</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="react" id="react" disabled />
+                  <Label htmlFor="react" className="text-muted-foreground">
+                    React
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="angular" id="angular" disabled />
+                  <Label htmlFor="angular" className="text-muted-foreground">
+                    Angular
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
 
-        <div className="space-y-4">
-          <div>
-            <Label className="mb-2 block">Choose Target Framework</Label>
-            <RadioGroup
-              defaultValue="nextjs"
-              className="flex gap-4"
-              value={framework}
-              onValueChange={(value: string) =>
-                setFramework(value as Framework)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="nextjs" id="nextjs" />
-                <Label htmlFor="nextjs">Next.js</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="react" id="react" disabled />
-                <Label htmlFor="react" className="text-muted-foreground">
-                  React
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="angular" id="angular" disabled />
-                <Label htmlFor="angular" className="text-muted-foreground">
-                  Angular
-                </Label>
-              </div>
-            </RadioGroup>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('file-upload')?.click()}
+                disabled={isLoading}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Files
+              </Button>
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".html,.css,.js"
+                multiple
+              />
+              <Button onClick={onAnalyze} disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="mr-2 h-4 w-4" />
+                )}
+                Analyze Code
+              </Button>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('file-upload')?.click()}
-              disabled={isLoading}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Files
-            </Button>
-            <input
-              type="file"
-              id="file-upload"
-              className="hidden"
-              onChange={handleFileChange}
-              accept=".html,.css,.js"
-              multiple
-            />
-            <Button onClick={onAnalyze} disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Wand2 className="mr-2 h-4 w-4" />
-              )}
-              Analyze Code
-            </Button>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
