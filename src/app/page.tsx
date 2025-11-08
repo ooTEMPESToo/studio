@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { CodeInputPane } from '@/components/CodeInputPane';
 import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
-import { getAiSuggestions, type TransformedFile } from '@/app/actions';
+import { getAiSuggestions, type TransformedFile, enhanceCodeWithAi } from '@/app/actions';
 import { useToast } from '@/components/ui/use-toast';
 
 export type Framework = 'nextjs' | 'react' | 'angular';
@@ -17,6 +17,7 @@ export default function Home() {
   const [tailwindSuggestions, setTailwindSuggestions] = useState<string>('');
   const [projectFiles, setProjectFiles] = useState<TransformedFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEnhancing, setIsEnhancing] = useState<boolean>(false);
   const [framework, setFramework] = useState<Framework>('nextjs');
   const [history, setHistory] = useState<string[]>([]);
 
@@ -51,6 +52,32 @@ export default function Home() {
       setComponentSuggestions(result.components || '');
       setTailwindSuggestions(result.styles || '');
       setProjectFiles(result.project || []);
+    }
+  };
+  
+  const handleEnhance = async (fileToEnhance: TransformedFile, prompt: string) => {
+    setIsEnhancing(true);
+    const result = await enhanceCodeWithAi(fileToEnhance.content, prompt);
+    setIsEnhancing(false);
+
+    if (result.error) {
+      toast({
+        title: 'Enhancement Failed',
+        description: result.error,
+        variant: 'destructive',
+      });
+    } else if (result.enhancedCode) {
+      setProjectFiles(currentFiles => 
+        currentFiles.map(file => 
+          file.path === fileToEnhance.path 
+            ? { ...file, content: result.enhancedCode! }
+            : file
+        )
+      );
+      toast({
+        title: 'Code Enhanced',
+        description: `${fileToEnhance.path} has been updated.`,
+      });
     }
   };
 
@@ -98,6 +125,8 @@ export default function Home() {
               tailwindSuggestions={tailwindSuggestions}
               projectFiles={projectFiles}
               isLoading={isLoading}
+              isEnhancing={isEnhancing}
+              onEnhance={handleEnhance}
             />
           </div>
         </div>

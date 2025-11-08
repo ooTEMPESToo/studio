@@ -6,6 +6,7 @@ import {
   generateProjectStructure,
   type GenerateProjectStructureOutput,
 } from '@/ai/flows/generate-project-structure';
+import { enhanceCode } from '@/ai/flows/enhance-code';
 
 export type TransformedFile = GenerateProjectStructureOutput['files'][0];
 
@@ -60,5 +61,25 @@ export async function getAiSuggestions(code: string): Promise<{
         return { error: error.message };
     }
     return { error: 'An unknown error occurred while analyzing the code.' };
+  }
+}
+
+export async function enhanceCodeWithAi(
+  code: string,
+  prompt: string
+): Promise<{ enhancedCode?: string; error?: string }> {
+  if (!code || !prompt) {
+    return { error: 'Code or prompt is empty.' };
+  }
+
+  try {
+    const result = await enhanceCode({ code, prompt });
+    return { enhancedCode: result.enhancedCode };
+  } catch (error) {
+    console.error('Error enhancing code:', error);
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: 'An unknown error occurred while enhancing the code.' };
   }
 }

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ChevronsRight, FileCode, Download, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronsRight, FileCode, Download, FileText, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,11 +18,14 @@ import {
 import { type TransformedFile } from '@/app/actions';
 import { cn } from '@/lib/utils';
 import JSZip from 'jszip';
+import { EnhanceCodeDialog } from './EnhanceCodeDialog';
 
 interface OutputPaneProps {
   tailwindSuggestions: string;
   projectFiles: TransformedFile[];
   isLoading: boolean;
+  isEnhancing: boolean;
+  onEnhance: (file: TransformedFile, prompt: string) => void;
 }
 
 interface FileTreeProps {
@@ -73,8 +76,27 @@ const FileTree = ({ files, selectedFile, onSelectFile, isLoading }: FileTreeProp
 };
 
 
-export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: OutputPaneProps) {
+export function OutputPane({ tailwindSuggestions, projectFiles, isLoading, isEnhancing, onEnhance }: OutputPaneProps) {
   const [selectedFile, setSelectedFile] = useState<TransformedFile | null>(null);
+  const [isEnhanceDialogOpen, setIsEnhanceDialogOpen] = useState(false);
+
+  useEffect(() => {
+    // If project files are updated, select the first file by default
+    if (projectFiles.length > 0 && !selectedFile) {
+      setSelectedFile(projectFiles[0]);
+    }
+    // If the selected file is no longer in the project files, deselect it
+    if (selectedFile && !projectFiles.find(f => f.path === selectedFile.path)) {
+      setSelectedFile(projectFiles[0] || null);
+    }
+  }, [projectFiles, selectedFile]);
+  
+  // When an enhancement is complete, close the dialog
+  useEffect(() => {
+    if (!isEnhancing) {
+      setIsEnhanceDialogOpen(false);
+    }
+  }, [isEnhancing]);
 
   const handleSelectFile = (file: TransformedFile) => {
     setSelectedFile(file);
@@ -96,6 +118,7 @@ export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: Out
   };
 
   return (
+    <>
     <Card className="h-full">
       <Tabs defaultValue="project" className="flex h-full flex-col">
         <div className="p-4">
@@ -148,26 +171,42 @@ export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: Out
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={60} minSize={40}>
-              <ScrollArea className="h-full">
-                <div className="p-4 font-code text-sm">
-                  {selectedFile ? (
-                     <pre className="whitespace-pre-wrap">
-                      <code>{selectedFile.content}</code>
-                    </pre>
-                  ) : (
-                    <div className="flex h-full min-h-[300px] items-center justify-center">
-                       <p className="text-center text-muted-foreground">
-                        {isLoading ? 'Loading file...' : 'Select a file to view its content'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+              <div className="relative h-full">
+                <ScrollArea className="h-full">
+                  <div className="p-4 font-code text-sm">
+                    {isEnhancing && selectedFile ? (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+                        <Loader2 className="mb-2 h-8 w-8 animate-spin" />
+                        <p className="text-sm text-muted-foreground">Enhancing code...</p>
+                      </div>
+                    ) : null}
+                    {selectedFile ? (
+                       <pre className="whitespace-pre-wrap">
+                        <code>{selectedFile.content}</code>
+                      </pre>
+                    ) : (
+                      <div className="flex h-full min-h-[300px] items-center justify-center">
+                         <p className="text-center text-muted-foreground">
+                          {isLoading ? 'Loading file...' : 'Select a file to view its content'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
             </ResizablePanel>
           </ResizablePanelGroup>
-          <div className="border-t p-4">
+          <div className="flex items-center justify-between gap-2 border-t p-4">
+             <Button
+              variant="outline"
+              onClick={() => setIsEnhanceDialogOpen(true)}
+              disabled={isLoading || isEnhancing || !selectedFile}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Enhance
+            </Button>
             <Button
-              className="w-full"
+              className="flex-1"
               disabled={isLoading || projectFiles.length === 0}
               onClick={handleDownload}
             >
@@ -178,5 +217,13 @@ export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: Out
         </TabsContent>
       </Tabs>
     </Card>
+    <EnhanceCodeDialog
+        isOpen={isEnhanceDialogOpen}
+        setIsOpen={setIsEnhanceDialogOpen}
+        fileToEnhance={selectedFile}
+        onEnhance={onEnhance}
+        isEnhancing={isEnhancing}
+      />
+    </>
   );
 }
