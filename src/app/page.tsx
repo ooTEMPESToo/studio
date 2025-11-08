@@ -6,7 +6,7 @@ import { CodeInputPane } from '@/components/CodeInputPane';
 import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
 import { getAiSuggestions, type TransformedFile } from '@/app/actions';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Home() {
   const { toast } = useToast();
