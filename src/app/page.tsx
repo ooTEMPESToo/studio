@@ -76,8 +76,8 @@ export default function Home() {
         isLoading={isLoading}
       />
       <main className="flex-1 p-4 lg:p-6">
-        <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <div className="md:col-span-1">
+        <div className="flex flex-col gap-6">
+          <div>
             <CodeInputPane
               code={code}
               setCode={setCode}
@@ -87,13 +87,13 @@ export default function Home() {
               setFramework={setFramework}
             />
           </div>
-          <div className="md:col-span-1">
+          <div>
             <SuggestionsPane
               suggestions={componentSuggestions}
               isLoading={isLoading}
             />
           </div>
-          <div className="md:col-span-2 xl:col-span-1">
+          <div>
             <OutputPane
               tailwindSuggestions={tailwindSuggestions}
               projectFiles={projectFiles}
