@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/resizable';
 import { type TransformedFile } from '@/app/actions';
 import { cn } from '@/lib/utils';
+import JSZip from 'jszip';
 
 interface OutputPaneProps {
   tailwindSuggestions: string;
@@ -79,6 +80,21 @@ export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: Out
     setSelectedFile(file);
   }
   
+  const handleDownload = () => {
+    const zip = new JSZip();
+    projectFiles.forEach((file) => {
+      zip.file(file.path, file.content);
+    });
+    zip.generateAsync({ type: 'blob' }).then((content) => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(content);
+      link.download = 'modernized-project.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  };
+
   return (
     <Card className="h-full">
       <Tabs defaultValue="project" className="flex h-full flex-col">
@@ -150,7 +166,11 @@ export function OutputPane({ tailwindSuggestions, projectFiles, isLoading }: Out
             </ResizablePanel>
           </ResizablePanelGroup>
           <div className="border-t p-4">
-            <Button className="w-full" disabled={isLoading || projectFiles.length === 0}>
+            <Button
+              className="w-full"
+              disabled={isLoading || projectFiles.length === 0}
+              onClick={handleDownload}
+            >
               <Download className="mr-2 h-4 w-4" />
               Download Project
             </Button>
