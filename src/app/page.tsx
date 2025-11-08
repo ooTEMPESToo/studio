@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { CodeInputPane } from '@/components/CodeInputPane';
 import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
-import { getAiSuggestions } from '@/app/actions';
+import { getAiSuggestions, type TransformedFile } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
@@ -13,6 +13,7 @@ export default function Home() {
   const [code, setCode] = useState<string>('');
   const [componentSuggestions, setComponentSuggestions] = useState<string>('');
   const [tailwindSuggestions, setTailwindSuggestions] = useState<string>('');
+  const [projectFiles, setProjectFiles] = useState<TransformedFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleAnalyze = async () => {
@@ -27,6 +28,7 @@ export default function Home() {
     setIsLoading(true);
     setComponentSuggestions('');
     setTailwindSuggestions('');
+    setProjectFiles([]);
 
     const result = await getAiSuggestions(code);
     setIsLoading(false);
@@ -40,6 +42,7 @@ export default function Home() {
     } else {
       setComponentSuggestions(result.components || '');
       setTailwindSuggestions(result.styles || '');
+      setProjectFiles(result.project || []);
     }
   };
 
@@ -65,6 +68,7 @@ export default function Home() {
           <div className="xl:col-span-3">
             <OutputPane
               tailwindSuggestions={tailwindSuggestions}
+              projectFiles={projectFiles}
               isLoading={isLoading}
             />
           </div>
