@@ -7,6 +7,7 @@ import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
 import { getAiSuggestions, type TransformedFile } from '@/app/actions';
 import { useToast } from '@/components/ui/use-toast';
+import { HistoryPane } from '@/components/HistoryPane';
 
 export type Framework = 'nextjs' | 'react' | 'angular';
 
@@ -18,6 +19,7 @@ export default function Home() {
   const [projectFiles, setProjectFiles] = useState<TransformedFile[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [framework, setFramework] = useState<Framework>('nextjs');
+  const [history, setHistory] = useState<string[]>([]);
 
   const handleAnalyze = async () => {
     if (!code.trim()) {
@@ -32,6 +34,10 @@ export default function Home() {
     setComponentSuggestions('');
     setTailwindSuggestions('');
     setProjectFiles([]);
+
+    if (code && !history.includes(code)) {
+      setHistory([code, ...history]);
+    }
 
     const result = await getAiSuggestions(code);
     setIsLoading(false);
@@ -49,11 +55,23 @@ export default function Home() {
     }
   };
 
+  const handleLoadHistory = (historyCode: string) => {
+    setCode(historyCode);
+  };
+
+  const handleDeleteHistory = (index: number) => {
+    setHistory(history.filter((_, i) => i !== index));
+  };
+  
+  const handleClearHistory = () => {
+    setHistory([]);
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 p-4 lg:p-6">
-        <div className="grid h-full grid-cols-1 gap-6 xl:grid-cols-10">
+        <div className="grid h-full grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="xl:col-span-3">
             <CodeInputPane
               code={code}
@@ -64,7 +82,16 @@ export default function Home() {
               setFramework={setFramework}
             />
           </div>
-          <div className="xl:col-span-4">
+          <div className="xl:col-span-3">
+            <HistoryPane
+              history={history}
+              onLoadHistory={handleLoadHistory}
+              onDeleteHistory={handleDeleteHistory}
+              onClearHistory={handleClearHistory}
+              isLoading={isLoading}
+            />
+          </div>
+          <div className="xl:col-span-3">
             <SuggestionsPane
               suggestions={componentSuggestions}
               isLoading={isLoading}
