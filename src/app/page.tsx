@@ -7,6 +7,7 @@ import { SuggestionsPane } from '@/components/SuggestionsPane';
 import { OutputPane } from '@/components/OutputPane';
 import { getAiSuggestions, type TransformedFile, enhanceCodeWithAi } from '@/app/actions';
 import { useToast } from '@/components/ui/use-toast';
+import UploadOptions from '@/components/UploadOptions'; // ✅ new import
 
 export type Framework = 'nextjs' | 'react' | 'angular';
 
@@ -21,11 +22,12 @@ export default function Home() {
   const [framework, setFramework] = useState<Framework>('nextjs');
   const [history, setHistory] = useState<string[]>([]);
 
+  // 🔹 Handle Analyze
   const handleAnalyze = async () => {
     if (!code.trim()) {
       toast({
         title: 'Input Required',
-        description: 'Please paste some code before analyzing.',
+        description: 'Please paste or upload some code before analyzing.',
         variant: 'destructive',
       });
       return;
@@ -54,7 +56,8 @@ export default function Home() {
       setProjectFiles(result.project || []);
     }
   };
-  
+
+  // 🔹 Handle Enhance
   const handleEnhance = async (fileToEnhance: TransformedFile, prompt: string) => {
     setIsEnhancing(true);
     const result = await enhanceCodeWithAi(fileToEnhance.content, prompt);
@@ -67,9 +70,9 @@ export default function Home() {
         variant: 'destructive',
       });
     } else if (result.enhancedCode) {
-      setProjectFiles(currentFiles => 
-        currentFiles.map(file => 
-          file.path === fileToEnhance.path 
+      setProjectFiles(currentFiles =>
+        currentFiles.map(file =>
+          file.path === fileToEnhance.path
             ? { ...file, content: result.enhancedCode! }
             : file
         )
@@ -81,6 +84,7 @@ export default function Home() {
     }
   };
 
+  // 🔹 Handle History
   const handleLoadHistory = (historyCode: string) => {
     setCode(historyCode);
   };
@@ -88,22 +92,51 @@ export default function Home() {
   const handleDeleteHistory = (index: number) => {
     setHistory(history.filter((_, i) => i !== index));
   };
-  
+
   const handleClearHistory = () => {
     setHistory([]);
   };
 
+  // 🔹 Handle Uploads
+  const handleUploadFromComputer = async (file: File) => {
+    const text = await file.text();
+    setCode(text);
+    toast({
+      title: 'File Uploaded',
+      description: `Loaded ${file.name} from your computer.`,
+    });
+  };
+
+  const handleLoadFromGitHub = (content: string) => {
+    setCode(content);
+    toast({
+      title: 'Loaded from GitHub',
+      description: 'Code fetched successfully from your repository.',
+    });
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header 
+      <Header
         history={history}
         onLoadHistory={handleLoadHistory}
         onDeleteHistory={handleDeleteHistory}
         onClearHistory={handleClearHistory}
         isLoading={isLoading}
       />
+
       <main className="flex-1 p-4 lg:p-6">
         <div className="flex flex-col gap-6">
+
+          {/* ✅ Upload Options Added Here */}
+          <div className="flex justify-end">
+            <UploadOptions
+              onUploadFromComputer={handleUploadFromComputer}
+              onLoadFromGitHub={handleLoadFromGitHub}
+            />
+          </div>
+
+          {/* Code Input Pane */}
           <div>
             <CodeInputPane
               code={code}
@@ -114,12 +147,16 @@ export default function Home() {
               setFramework={setFramework}
             />
           </div>
+
+          {/* Suggestions Pane */}
           <div>
             <SuggestionsPane
               suggestions={componentSuggestions}
               isLoading={isLoading}
             />
           </div>
+
+          {/* Output Pane */}
           <div>
             <OutputPane
               tailwindSuggestions={tailwindSuggestions}
